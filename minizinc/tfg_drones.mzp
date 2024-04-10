@@ -1,0 +1,14 @@
+{
+    "openFiles": [
+        "instancia1.dzn",
+        "intento1.mzn"
+    ],
+    "openTab": 1,
+    "projectFiles": [
+        "instancia1.dzn",
+        "intento1.mzn"
+    ],
+    "selectedBuiltinConfigId": "org.gecode.gecode",
+    "selectedBuiltinConfigVersion": "6.3.0",
+    "version": 106
+}
