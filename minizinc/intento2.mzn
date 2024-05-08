@@ -1,21 +1,21 @@
 % Parameters
-int: m; % Number of drones
-int: p; % Number of recharge points
-int: n; % Number of users
+int: numberOfDrones; % Number of drones
+int: numberOfRechargePoints; % Number of recharge points
+int: numberOfUsersClusters; % Number of users Clusters
 int: M1; % Large enough value
 
 int: XY; %maximum xy axis distance
 
 
-set of int: Drones = 1..m; % Set of drones
-set of int: RechargePoints = 1..p; % Set of clusters
-set of int: Users = 1..n; % Set of users
+set of int: Drones = 1..numberOfDrones; % Set of drones
+set of int: RechargePoints = 1..numberOfRechargePoints; % Set of clusters
+set of int: Users = 1..numberOfUsersClusters; % Set of users
 
 
 array[Drones] of int: Ri; % Coverage radius of drone i
 array[Drones] of int: Bi; % Battery capacity of drone i
 array[Drones] of int: Ci; % Consumption per unit distance of drone i
-array[Users] of int: N; % Number of users in cluster k
+array[Users] of int: NUsers; % Number of users in cluster k
 array[Users, 1..2] of int: Pos; % Position of user cluster k (x, y)
 
 
@@ -35,7 +35,7 @@ function var int: euclidean(var int: x1,var int: y1, var int: x2, var int: y2) =
 
 
 % Objective function
-var int: Objective = %1000 * sum(k in Users)(U[k] * N[k]) 
+var int: Objective = %1000 * sum(k in Users)(U[k] * NUsers[k]) 
                   -  sum(i in Drones )(euclidean(D[i,1], D[i,2], P[ClosestRP[i],1], P[ClosestRP[i], 2]) )
                    ;
 

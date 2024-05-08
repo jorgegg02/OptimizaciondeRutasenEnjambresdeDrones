@@ -1,7 +1,7 @@
 
-m = 2; % Number of drones
-p = 1; % Number of recharge points
-n = 4; % Number of users
+numberOfDrones = 2; % Number of drones
+numberOfRechargePoints = 1; % Number of recharge points
+numberOfUsersClusters = 4; % Number of users
 M1 = 100000; % Large enough value
 XY = 7;
 
@@ -9,8 +9,8 @@ XY = 7;
  Ri = [1, 1]; % Coverage radius of drones
 Bi = [20, 20]; % Battery capacity of drones
 Ci = [2, 2]; % Consumption per unit distance of drones
- N = [4, 6, 3, 2]; % Number of users in clusters
-Pos = [| 2, 2
+ NUsers = [4, 6, 3, 2]; % Number of users in clusters
+UserClusterPosition = [| 2, 2
        | 3, 3
        | 5, 1
        | 6, 1 |]; % Position of user clusters

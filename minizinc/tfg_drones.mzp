@@ -1,12 +1,24 @@
 {
     "openFiles": [
+        "intento1.mzn",
+        "intento2.mzn",
         "instancia1.dzn",
-        "intento1.mzn"
+        "instancia2.dzn",
+        "instancia3.dzn",
+        "intento1_version_conaltura.mzn",
+        "intento3_version_conaltura.mzn",
+        "instancia3_hasps.dzn"
     ],
-    "openTab": 1,
+    "openTab": 6,
     "projectFiles": [
         "instancia1.dzn",
-        "intento1.mzn"
+        "instancia2.dzn",
+        "instancia3.dzn",
+        "instancia3_hasps.dzn",
+        "intento1.mzn",
+        "intento1_version_conaltura.mzn",
+        "intento2.mzn",
+        "intento3_version_conaltura.mzn"
     ],
     "selectedBuiltinConfigId": "org.gecode.gecode",
     "selectedBuiltinConfigVersion": "6.3.0",
