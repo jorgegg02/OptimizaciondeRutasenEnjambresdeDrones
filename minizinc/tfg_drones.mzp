@@ -7,9 +7,10 @@
         "instancia3.dzn",
         "intento1_version_conaltura.mzn",
         "intento3_version_conaltura.mzn",
-        "instancia3_hasps.dzn"
+        "instancia3_hasps.dzn",
+        "intento4_version_QoS.mzn"
     ],
-    "openTab": 6,
+    "openTab": 8,
     "projectFiles": [
         "instancia1.dzn",
         "instancia2.dzn",
@@ -18,7 +19,8 @@
         "intento1.mzn",
         "intento1_version_conaltura.mzn",
         "intento2.mzn",
-        "intento3_version_conaltura.mzn"
+        "intento3_version_conaltura.mzn",
+        "intento4_version_QoS.mzn"
     ],
     "selectedBuiltinConfigId": "org.gecode.gecode",
     "selectedBuiltinConfigVersion": "6.3.0",

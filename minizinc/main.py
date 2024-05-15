@@ -14,7 +14,6 @@ NUsers = []
 UserClusterPosition = []
 DroneHeight = []
 
-maxtime = 100000
 
 def execute_minizinc(mzn_file, dzn_file,timeout):
     try:
@@ -158,6 +157,16 @@ def parse_output_data(outputfile):
                 clean_line = line.split("=")[1].strip().strip(";")
                 closestRP = [int(x) for x in clean_line.strip("[").strip("]").split(",")]
                 print(closestRP)
+            
+            elif line.startswith('userQoS'):
+                print("userQoS")
+                print(line)
+                global userQoS
+                clean_line = line.split("=")[1].strip().strip(";")
+                userQoS = [float(x) for x in clean_line.strip("[").strip("]").split(",")]
+                print(sum(userQoS))
+
+            
 
 def print_matrix():
     print("  ", end=" ")
@@ -212,8 +221,9 @@ def calculate_total_distance_drones_rp():
 print("Starting the script...")
 
 # Specify the MiniZinc file and data file
-mzn_file = 'intento3_version_conaltura.mzn'
+mzn_file = 'intento4_version_QoS.mzn'
 dzn_file = 'instancia3_hasps.dzn'
+maxtime = 100000
 
 # Execute the MiniZinc file
 output = execute_minizinc(mzn_file, dzn_file,maxtime)
