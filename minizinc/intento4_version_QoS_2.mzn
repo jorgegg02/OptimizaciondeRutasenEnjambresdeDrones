@@ -8,6 +8,7 @@ int: numberOfHASPs; % Number of HASPs
 int: M1; % Large enough value
 
 int: XY; % maximum xy axis distance
+int: CellDist;
 
 
 set of int: Drones = 1..numberOfDrones; % Set of drones
@@ -38,14 +39,21 @@ array[HASPs , 1..2] of var 1..XY: HASPPosition; % Position of HASP g (x, y)
 array[HASPs, Drones] of var 0..1: DroneHASPCoverage; % 1 if HASP g covers drone i, 0 otherwise
 % array[Drones] of var HASPs: ClosestHASP; % [2] = 1 -> closest HASP of drone 2 is HASP 1
 
+array[Users] of var Drones: ClosestDrone; % Height of drone 1..3
+array[Users] of var float: userLatency;
+array[Users] of var float: userPathLoss;
+array[Users] of var float: userBandWidth;
+
 
 % Helper function to compute euclidean distance
 function var int: euclidean(var int: x1,var int: y1, var int: x2, var int: y2) =
     (abs(x1 - x2) + abs(y1 - y2));
 
-% Objective function
-var int: Objective = 100000 * sum(k in Users)(isUserCovered[k] * NUsers[k]) 
-                  -  sum(i in Drones )(euclidean(DronePosition[i,1], DronePosition[i,2], RechargePointPosition[ClosestRP[i],1], RechargePointPosition[ClosestRP[i], 2]) )
+% Objective function OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+var int: Objective = 100000 * sum(k in Users)(isUserCovered[k] * NUsers[k]) +
+ round(sum(k in Users)((userBandWidth[k] * NUsers[k]) - (userPathLoss[k] * NUsers[k]) -
+  (userLatency[k] * NUsers[k]))) -  
+  sum(i in Drones )(euclidean(DronePosition[i,1], DronePosition[i,2], RechargePointPosition[ClosestRP[i],1], RechargePointPosition[ClosestRP[i], 2]))
                    ;
 
 
@@ -60,7 +68,7 @@ euclidean(DronePosition[i, 1],DronePosition[i, 2], RechargePointPosition[Closest
 );
 
 constraint forall(i in Drones, j in Users)(
-    Ri[i]*DroneHeight[i] >= euclidean(DronePosition[i, 1], DronePosition[i, 2], UserClusterPosition[j, 1], UserClusterPosition[j, 2]) - M1 * (1 - UserDroneCoverage[i, j])
+    Ri[i] + DroneHeight[i]-1 >= euclidean(DronePosition[i, 1], DronePosition[i, 2], UserClusterPosition[j, 1], UserClusterPosition[j, 2]) - M1 * (1 - UserDroneCoverage[i, j])
 );
 
 constraint forall( k in Users)(
@@ -71,13 +79,10 @@ constraint forall( k in Users)(
     endif
 );
 
-constraint forall (k in Users) (
- isUserCovered[k] = 1
-);
+% constraint forall (k in Users) (
+%  isUserCovered[k] = 1
+% );
 
-constraint forall(i in Drones)(
-euclidean(DronePosition[i, 1],DronePosition[i, 2], RechargePointPosition[ClosestRP[i], 1], RechargePointPosition[ClosestRP[i], 2] ) = min(j in RechargePoints)(euclidean(DronePosition[i, 1], DronePosition[i, 2],  RechargePointPosition[j, 1], RechargePointPosition[j, 2] )) 
-);
 
 %-----------------------HASP constraints-----------------------------------------------------------
 constraint forall(i in Drones, g in HASPs )(
@@ -92,6 +97,29 @@ constraint forall (i in Drones) (
 %todo summetry breaking constraint
 %constraint lex_lesseq(DronePosition[d,1],DronePosition[d+1,1]) /\ lex_lesseq(DronePosition[d,2],DronePosition[d+1,2]);
 
+
+constraint forall(k in Users)(
+euclidean(UserClusterPosition[k, 1],UserClusterPosition[k, 2], DronePosition[ClosestDrone[k], 1], DronePosition[ClosestDrone[k], 2] ) = min(i in Drones)(euclidean(UserClusterPosition[k, 1],UserClusterPosition[k, 2],  DronePosition[i, 1], DronePosition[i, 2] )) 
+);
+
+
+constraint forall(k in Users)(
+    userLatency[k] = CellDist * euclidean(UserClusterPosition[k, 1],UserClusterPosition[k, 2], DronePosition[ClosestDrone[k], 1], DronePosition[ClosestDrone[k], 2])/300000   
+);
+
+
+constraint forall(k in Users)(
+    userBandWidth[k] =  1000 * isUserCovered[k] / sum (i in Users)(UserDroneCoverage[ClosestDrone[k],i]) 
+);
+
+
+% constraint forall(k in Users)(
+%     userPathLoss[k] =  37 + 10 * 2.5 * log10(euclidean(UserClusterPosition[k, 1],UserClusterPosition[k, 2], DronePosition[ClosestDrone[k], 1], DronePosition[ClosestDrone[k], 2])^2 + DroneHeight[ClosestDrone[k]]^2)
+% );
+
+constraint forall(k in Users)(
+    userPathLoss[k] =  euclidean(UserClusterPosition[k, 1],UserClusterPosition[k, 2], DronePosition[ClosestDrone[k], 1], DronePosition[ClosestDrone[k], 2])^2 + DroneHeight[ClosestDrone[k]]^2
+);
 
 
 solve:: int_search(DronePosition, dom_w_deg, indomain_random) ::restart_luby(250):: relax_and_reconstruct(DronePosition[Drones,1]++DronePosition[Drones,2], 85) maximize Objective;

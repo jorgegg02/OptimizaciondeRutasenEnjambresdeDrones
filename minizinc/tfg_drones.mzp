@@ -8,19 +8,23 @@
         "intento1_version_conaltura.mzn",
         "intento3_version_conaltura.mzn",
         "instancia3_hasps.dzn",
-        "intento4_version_QoS.mzn"
+        "intento4_version_QoS.mzn",
+        "intento4_version_QoS_2.mzn",
+        "instancia3_hasps_QoS.dzn"
     ],
-    "openTab": 8,
+    "openTab": 9,
     "projectFiles": [
         "instancia1.dzn",
         "instancia2.dzn",
         "instancia3.dzn",
         "instancia3_hasps.dzn",
+        "instancia3_hasps_QoS.dzn",
         "intento1.mzn",
         "intento1_version_conaltura.mzn",
         "intento2.mzn",
         "intento3_version_conaltura.mzn",
-        "intento4_version_QoS.mzn"
+        "intento4_version_QoS.mzn",
+        "intento4_version_QoS_2.mzn"
     ],
     "selectedBuiltinConfigId": "org.gecode.gecode",
     "selectedBuiltinConfigVersion": "6.3.0",

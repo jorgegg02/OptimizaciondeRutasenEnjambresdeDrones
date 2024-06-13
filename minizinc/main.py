@@ -1,6 +1,7 @@
 import subprocess
 import time
 import numpy as np
+import json
 
 numberOfDrones = 0
 numberOfRechargePoints = 0
@@ -150,6 +151,13 @@ def parse_output_data(outputfile):
                 clean_line = line.split("=")[1].strip().strip(";")
                 DroneHeight = [int(x) for x in clean_line.strip("[").strip("]").split(",")]
             
+            elif line.startswith('isUserCovered'):
+                global isUserCovered
+                isUserCovered = []
+                clean_line = line.split("=")[1].strip().strip(";")
+                isUserCovered = [int(x) for x in clean_line.strip("[").strip("]").split(",")]
+            
+
             elif line.startswith('ClosestRP'):
                 print("ClosestRP")
                 print(line)
@@ -157,14 +165,33 @@ def parse_output_data(outputfile):
                 clean_line = line.split("=")[1].strip().strip(";")
                 closestRP = [int(x) for x in clean_line.strip("[").strip("]").split(",")]
                 print(closestRP)
-            
-            elif line.startswith('userQoS'):
-                print("userQoS")
-                print(line)
-                global userQoS
+
+            elif line.startswith('ClosestDrone'):
+                global ClosestDrone
+                ClosestDrone = []
                 clean_line = line.split("=")[1].strip().strip(";")
-                userQoS = [float(x) for x in clean_line.strip("[").strip("]").split(",")]
-                print(sum(userQoS))
+                ClosestDrone = [int(x) for x in clean_line.strip("[").strip("]").split(",")]
+            
+            elif line.startswith('userLatency'):
+                global userLatency
+                userLatency = []
+                clean_line = line.split("=")[1].strip().strip(";")
+                userLatency = [float(x) for x in clean_line.strip("[").strip("]").split(",")]
+
+            elif line.startswith('userPathLoss'):
+                global userPathLoss
+                userPathLoss = []
+                clean_line = line.split("=")[1].strip().strip(";")
+                userPathLoss = [float(x) for x in clean_line.strip("[").strip("]").split(",")]
+
+            elif line.startswith('userBandWidth'):
+                global userBandWidth
+                userBandWidth = []
+                clean_line = line.split("=")[1].strip().strip(";")
+                userBandWidth = [float(x) for x in clean_line.strip("[").strip("]").split(",")]
+
+            
+            
 
             
 
@@ -221,9 +248,9 @@ def calculate_total_distance_drones_rp():
 print("Starting the script...")
 
 # Specify the MiniZinc file and data file
-mzn_file = 'intento4_version_QoS.mzn'
-dzn_file = 'instancia3_hasps.dzn'
-maxtime = 100000
+mzn_file = 'intento4_version_QoS_2.mzn'
+dzn_file = 'instancia3_hasps_QoS.dzn'
+maxtime = 200000
 
 # Execute the MiniZinc file
 output = execute_minizinc(mzn_file, dzn_file,maxtime)
@@ -255,6 +282,34 @@ print("ClosestRP: ", closestRP)
 print("Matrix: ")
 print_matrix()
 print("Total distance drones to closest RP: ", calculate_total_distance_drones_rp())
+
+# Create a dictionary to store the data
+data = {
+    "numberOfDrones": numberOfDrones,
+    "numberOfRechargePoints": numberOfRechargePoints,
+    "numberOfUsersClusters": numberOfUsersClusters,
+    "numberOfHASPs": numberOfHASPs,
+    "XY": XY,
+    "HASPPosition": HASPPosition,
+    "RechargePointPosition": RechargePointPosition,
+    "DronePosition": DronePosition,
+    "NUsers": NUsers,
+    "UserClusterPosition": UserClusterPosition,
+    "DroneHeight": DroneHeight,
+    "isUserCovered": isUserCovered,
+    "ClosestRP": closestRP,
+    "ClosestDrone": ClosestDrone,
+    "userLatency": userLatency,
+    "userPathLoss": userPathLoss,
+    "userBandWidth": userBandWidth
+}
+
+# Save the data to a JSON file
+file_name = f'results/result_{dzn_file}_{time.strftime("%Y%m%d-%H%M%S")}.json'
+with open(file_name, 'w') as f:
+    json.dump(data, f)
+
+print("Data saved to " + file_name)
 
 
 
