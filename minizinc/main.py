@@ -2,6 +2,8 @@ import subprocess
 import time
 import numpy as np
 import json
+import os
+import argparse
 
 numberOfDrones = 0
 numberOfRechargePoints = 0
@@ -245,81 +247,91 @@ def calculate_total_distance_drones_rp():
     
 
 
+def execute_optimization(mzn_file, dzn_file, instancia):
+
+    
+    maxtime = 200000
+
+    # Execute the MiniZinc file
+    execute_minizinc(mzn_file, dzn_file,maxtime)
+
+    print("Parsing the data...")
+
+
+    # Parse the data
+    parse_minizinc_data(dzn_file)
+    parse_output_data('output.txt')
+
+
+
+    print("XY: ", XY)
+    print("numberOfDrones: ", numberOfDrones)
+    print("numberOfRechargePoints: ", numberOfRechargePoints)
+    print("numberOfUsersClusters: ", numberOfUsersClusters)
+    print("numberOfHASPs: ", numberOfHASPs)
+    print("NUsers: ", NUsers)
+    print("UserClusterPosition: ", UserClusterPosition)
+
+    # Parse the output
+    print("HASPPosition: ", HASPPosition)
+    print("RechargePointPosition: ", RechargePointPosition)
+    print("DronePosition: ", DronePosition)
+    print("DroneHeight: ", DroneHeight)
+    print("ClosestRP: ", closestRP)
+
+    print("Matrix: ")
+    print_matrix()
+    print("Total distance drones to closest RP: ", calculate_total_distance_drones_rp())
+
+    # Create a dictionary to store the data
+    data = {
+        "numberOfDrones": numberOfDrones,
+        "numberOfRechargePoints": numberOfRechargePoints,
+        "numberOfUsersClusters": numberOfUsersClusters,
+        "numberOfHASPs": numberOfHASPs,
+        "XY": XY,
+        "HASPPosition": HASPPosition,
+        "RechargePointPosition": RechargePointPosition,
+        "DronePosition": DronePosition,
+        "NUsers": NUsers,
+        "UserClusterPosition": UserClusterPosition,
+        "DroneHeight": DroneHeight,
+        "isUserCovered": isUserCovered,
+        "ClosestRP": closestRP,
+        "ClosestDrone": ClosestDrone,
+        "userLatency": userLatency,
+        "userPathLoss": userPathLoss,
+        "userBandWidth": userBandWidth
+    }
+
+    # Save the data to a JSON file
+    file_name = f'results/{instancia}/result_{dzn_file}.json'
+    os.makedirs(os.path.dirname(file_name), exist_ok=True)  # Create the directory if it doesn't exist
+    with open(file_name, 'w') as f:
+        json.dump(data, f)
+    
+    print("Data saved to file: " + file_name)
+
+
+
 print("Starting the script...")
-
-# Specify the MiniZinc file and data file
 mzn_file = 'intento4_version_QoS_2.mzn'
-dzn_file = 'instancia3_hasps_QoS.dzn'
-maxtime = 200000
 
-# Execute the MiniZinc file
-output = execute_minizinc(mzn_file, dzn_file,maxtime)
+# Get the directory path from the command line argument
+parser = argparse.ArgumentParser()
+parser.add_argument('directory', type=str)
 
-print("Parsing the data...")
+    
+args = parser.parse_args()
+directory = args.directory
 
+print("Directory: ", directory)
+# Iterate over all files in the directory
+for filename in os.listdir(directory):
+    if filename.endswith(".dzn"):
+        # Construct the full file path
+        dzn_file = os.path.join(directory, filename)
+        
+        # Execute the optimization for the current file
+        execute_optimization(mzn_file, dzn_file, directory.split("\\")[-1])
 
-# Parse the data
-parse_minizinc_data(dzn_file)
-parse_output_data('output.txt')
-
-
-
-print("XY: ", XY)
-print("numberOfDrones: ", numberOfDrones)
-print("numberOfRechargePoints: ", numberOfRechargePoints)
-print("numberOfUsersClusters: ", numberOfUsersClusters)
-print("numberOfHASPs: ", numberOfHASPs)
-print("NUsers: ", NUsers)
-print("UserClusterPosition: ", UserClusterPosition)
-
-# Parse the output
-print("HASPPosition: ", HASPPosition)
-print("RechargePointPosition: ", RechargePointPosition)
-print("DronePosition: ", DronePosition)
-print("DroneHeight: ", DroneHeight)
-print("ClosestRP: ", closestRP)
-
-print("Matrix: ")
-print_matrix()
-print("Total distance drones to closest RP: ", calculate_total_distance_drones_rp())
-
-# Create a dictionary to store the data
-data = {
-    "numberOfDrones": numberOfDrones,
-    "numberOfRechargePoints": numberOfRechargePoints,
-    "numberOfUsersClusters": numberOfUsersClusters,
-    "numberOfHASPs": numberOfHASPs,
-    "XY": XY,
-    "HASPPosition": HASPPosition,
-    "RechargePointPosition": RechargePointPosition,
-    "DronePosition": DronePosition,
-    "NUsers": NUsers,
-    "UserClusterPosition": UserClusterPosition,
-    "DroneHeight": DroneHeight,
-    "isUserCovered": isUserCovered,
-    "ClosestRP": closestRP,
-    "ClosestDrone": ClosestDrone,
-    "userLatency": userLatency,
-    "userPathLoss": userPathLoss,
-    "userBandWidth": userBandWidth
-}
-
-# Save the data to a JSON file
-file_name = f'results/result_{dzn_file}_{time.strftime("%Y%m%d-%H%M%S")}.json'
-with open(file_name, 'w') as f:
-    json.dump(data, f)
-
-print("Data saved to " + file_name)
-
-
-
-
-
-# structured_output = parse_minizinc_output("output.txt")
-# print(structured_output)
-# # coverage_stats = analyze_coverage(structured_output)
-# # print(coverage_stats)
-
-
-#  matriz, suma distancias, porcentaje area cobertura, 
-# ratio latencia altura 

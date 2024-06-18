@@ -1,0 +1,20 @@
+{
+    "numberOfDrones": 2,
+    "numberOfRechargePoints": 1,
+    "numberOfUsersClusters": 4,
+    "numberOfHASPs": 2,
+    "M1": 100000,
+    "XY": 7,
+    "CellDist": 50,
+    "RHASP": 10,
+    "Ri": [1, 1],
+    "Bi": [20, 20],
+    "Ci": [2, 2],
+    "NUsers": [4, 6, 3, 2],
+    "UserClusterPosition": [
+        [2, 2],
+        [3, 3],
+        [5, 1],
+        [6, 1]
+    ]
+}

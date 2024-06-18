@@ -1,88 +1,94 @@
-import os
 import json
-import glob
-import pandas as pd
+import os
 import matplotlib.pyplot as plt
 
-# Definir el directorio donde están los archivos JSON
-json_dir = './results'
+def load_data(file_path):
+    with open(file_path, 'r') as file:
+        return json.load(file)
 
-# Imprimir archivos en la carpeta
-print('Files in the directory:')
-for file in os.listdir(json_dir):
-    print(file)
-# Inicializar listas para almacenar los datos
-latencies = []
-path_losses = []
-bandwidths = []
-coverages = []
+def extract_metrics(data):
+    return {
+        'numberOfDrones': data['numberOfDrones'],
+        'numberOfRechargePoints': data['numberOfRechargePoints'],
+        'numberOfHASPs': data['numberOfHASPs'],
+        'userLatency': sum(data['userLatency']) / len(data['userLatency']),  # Promedio de latencia
+        'userPathLoss': sum(data['userPathLoss']) / len(data['userPathLoss']),  # Promedio de path loss
+        'userBandWidth': sum(data['userBandWidth']) / len(data['userBandWidth']),  # Promedio de ancho de banda
+        'coverage': sum(data['isUserCovered']) / len(data['isUserCovered'])  # Porcentaje de usuarios cubiertos
+    }
 
-# Leer todos los archivos JSON en la carpeta
-for json_file in glob.glob(os.path.join(json_dir, '*.json')):
-    print(f'Reading file: {json_file}')
-    with open(json_file, 'r') as f:
-        data = json.load(f)
-        latencies.extend(data['userLatency'])
-        path_losses.extend(data['userPathLoss'])
-        bandwidths.extend(data['userBandWidth'])
-        coverages.extend(data['isUserCovered'])
+def plot_metrics_grouped(metrics_list, titles, xlabel):
+    fig, axs = plt.subplots(2, 2, figsize=(14, 10))
+    axs = axs.flatten()
+    
+    for idx, metrics in enumerate(metrics_list):
+        axs[idx].plot(metrics['x'], metrics['y'], marker='o')
+        axs[idx].set_xlabel(xlabel)
+        axs[idx].set_ylabel(titles[idx])
+        axs[idx].set_title(titles[idx])
+        axs[idx].grid(True)
+    
+    plt.tight_layout()
+    plt.show()
 
-# Convertir los datos a DataFrame para facilitar el análisis
-df = pd.DataFrame({
-    'Latency': latencies,
-    'PathLoss': path_losses,
-    'Bandwidth': bandwidths,
-    'Coverage': coverages
-})
+def main():
+    directory = "C:\\Users\\jorge\\jgomezgi\\Universidad\\8cuatri\\tfg\\src\\minizinc\\results\\instancia3"
+    files = [f for f in os.listdir(directory) if f.endswith('.json')]
 
-#imprimir suma de coverage
-print(f'Total coverage: {df["Coverage"].sum()}')
+    drones_results = {'latency': {'x': [], 'y': []}, 'pathloss': {'x': [], 'y': []}, 'bandwidth': {'x': [], 'y': []}, 'coverage': {'x': [], 'y': []}}
+    rp_results = {'latency': {'x': [], 'y': []}, 'pathloss': {'x': [], 'y': []}, 'bandwidth': {'x': [], 'y': []}, 'coverage': {'x': [], 'y': []}}
+    hasp_results = {'latency': {'x': [], 'y': []}, 'pathloss': {'x': [], 'y': []}, 'bandwidth': {'x': [], 'y': []}, 'coverage': {'x': [], 'y': []}}
 
-# Calcular estadísticas
-stats = df.describe().transpose()
+    for file_name in files:
+        data = load_data(os.path.join(directory, file_name))
+        metrics = extract_metrics(data)
 
-# Agregar mediana
-stats['median'] = df.median()
+        drones_results['latency']['x'].append(metrics['numberOfDrones'])
+        drones_results['latency']['y'].append(metrics['userLatency'])
+        drones_results['pathloss']['x'].append(metrics['numberOfDrones'])
+        drones_results['pathloss']['y'].append(metrics['userPathLoss'])
+        drones_results['bandwidth']['x'].append(metrics['numberOfDrones'])
+        drones_results['bandwidth']['y'].append(metrics['userBandWidth'])
+        drones_results['coverage']['x'].append(metrics['numberOfDrones'])
+        drones_results['coverage']['y'].append(metrics['coverage'])
 
-# Mostrar estadísticas
-print(stats)
+        rp_results['latency']['x'].append(metrics['numberOfRechargePoints'])
+        rp_results['latency']['y'].append(metrics['userLatency'])
+        rp_results['pathloss']['x'].append(metrics['numberOfRechargePoints'])
+        rp_results['pathloss']['y'].append(metrics['userPathLoss'])
+        rp_results['bandwidth']['x'].append(metrics['numberOfRechargePoints'])
+        rp_results['bandwidth']['y'].append(metrics['userBandWidth'])
+        rp_results['coverage']['x'].append(metrics['numberOfRechargePoints'])
+        rp_results['coverage']['y'].append(metrics['coverage'])
 
-# Graficar la evolución de cada valor
-plt.figure(figsize=(14, 10))
+        hasp_results['latency']['x'].append(metrics['numberOfHASPs'])
+        hasp_results['latency']['y'].append(metrics['userLatency'])
+        hasp_results['pathloss']['x'].append(metrics['numberOfHASPs'])
+        hasp_results['pathloss']['y'].append(metrics['userPathLoss'])
+        hasp_results['bandwidth']['x'].append(metrics['numberOfHASPs'])
+        hasp_results['bandwidth']['y'].append(metrics['userBandWidth'])
+        hasp_results['coverage']['x'].append(metrics['numberOfHASPs'])
+        hasp_results['coverage']['y'].append(metrics['coverage'])
 
-# Latency
-plt.subplot(2, 2, 1)
-plt.plot(df['Latency'])
-plt.title('User Latency Evolution')
-plt.xlabel('Sample')
-plt.ylabel('Latency')
+    # Ordenar resultados por número de drones, RP y HASPs para una visualización más clara
+    for key in drones_results.keys():
+        drones_results[key]['x'], drones_results[key]['y'] = zip(*sorted(zip(drones_results[key]['x'], drones_results[key]['y'])))
+        rp_results[key]['x'], rp_results[key]['y'] = zip(*sorted(zip(rp_results[key]['x'], rp_results[key]['y'])))
+        hasp_results[key]['x'], hasp_results[key]['y'] = zip(*sorted(zip(hasp_results[key]['x'], hasp_results[key]['y'])))
 
-# Path Loss
-plt.subplot(2, 2, 2)
-plt.plot(df['PathLoss'])
-plt.title('User Path Loss Evolution')
-plt.xlabel('Sample')
-plt.ylabel('Path Loss')
+    # Crear listas de métricas para plotear en subplots
+    metrics_list_drones = [drones_results['latency'], drones_results['pathloss'], drones_results['bandwidth'], drones_results['coverage']]
+    titles_drones = ['Latencia', 'Pérdida de Señal', 'Ancho de Banda', 'Cobertura']
+    
+    metrics_list_rp = [rp_results['latency'], rp_results['pathloss'], rp_results['bandwidth'], rp_results['coverage']]
+    titles_rp = ['Latencia', 'Pérdida de Señal', 'Ancho de Banda', 'Cobertura']
+    
+    metrics_list_hasp = [hasp_results['latency'], hasp_results['pathloss'], hasp_results['bandwidth'], hasp_results['coverage']]
+    titles_hasp = ['Latencia', 'Pérdida de Señal', 'Ancho de Banda', 'Cobertura']
 
-# Bandwidth
-plt.subplot(2, 2, 3)
-plt.plot(df['Bandwidth'])
-plt.title('User Bandwidth Evolution')
-plt.xlabel('Sample')
-plt.ylabel('Bandwidth')
+    plot_metrics_grouped(metrics_list_drones, titles_drones, 'Número de Drones')
+    plot_metrics_grouped(metrics_list_rp, titles_rp, 'Número de Puntos de Recarga')
+    plot_metrics_grouped(metrics_list_hasp, titles_hasp, 'Número de HASPs')
 
-# Coverage
-plt.subplot(2, 2, 4)
-plt.plot(df['Coverage'])
-plt.title('User Coverage Evolution')
-plt.xlabel('Sample')
-plt.ylabel('Coverage')
-
-plt.tight_layout()
-plt.show()
-
-# Guardar estadísticas en un archivo CSV
-stats.to_csv('./results/statistics.csv')
-
-# Guardar gráficos en un archivo
-plt.savefig('./results/evolution_plots.png')
+if __name__ == '__main__':
+    main()
