@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import matplotlib.pyplot as plt
@@ -91,4 +92,13 @@ def main():
     plot_metrics_grouped(metrics_list_hasp, titles_hasp, 'Número de HASPs')
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Convert JSON to DZN format.')
+    parser.add_argument('instancia', type=str, help='Path to the input JSON file')
+
+    
+    args = parser.parse_args()
+
+    print(args.json_file)
+
     main()

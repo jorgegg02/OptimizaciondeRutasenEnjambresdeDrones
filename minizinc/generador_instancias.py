@@ -24,7 +24,7 @@ def json_to_dzn(data, dzn_file_path):
 )
 
     # Guardar datos en archivo .dzn
-    print(f"Saving data to {dzn_file_path}...")
+    print(f"Saving data to {dzn_file_path}")
     try:
         with open(dzn_file_path, 'x') as dzn_file:
             dzn_file.write(dzn_data)
@@ -36,8 +36,6 @@ def json_to_dzn(data, dzn_file_path):
         with open(dzn_file_path, 'x') as dzn_file:
             dzn_file.write(dzn_data)
    
-
-    print(f"Conversion complete! File saved as {dzn_file_path}")
 
 def dzn_name(data, dzn_file_path, instancia_path):
     ndrones = data['numberOfDrones']
@@ -63,33 +61,30 @@ def generate_dzn_instances(json_dir):
     print(densidad)
 
 
-    #generacion de instxancias con diferentes numero de drones
+    #generacion de instxancias con diferentes numero de drones y diferentes numero de puntos de recarga
     avg_radius = sum(data["Ri"]) / len(data["Ri"])
     print("avg_radius: ", avg_radius)
 
-    n = round(area / (3.14 * avg_radius**2))
-    print("n Drones:")
-    print(n)
-
-    aux_drones = data["numberOfDrones"]
-    for drones in range(1,n+1):
-        data["numberOfDrones"] = drones
-        dzn_file_path = dzn_name(data, dzn_dir, json_dir)
-        json_to_dzn(data, dzn_file_path)
-    data["numberOfDrones"] = aux_drones
-
-    #generacion de instancias con diferentes numero de puntos de recarga
     avg_battery = sum(data["Bi"]) / len(data["Bi"])
     avg_consumption = sum(data["Ci"]) / len(data["Ci"])
-    n = round(area / ( avg_battery/avg_consumption)/2)
+    
+    nDrones = round(area / (3.14 * avg_radius**2))
+    print("n Drones:")
+    print(nDrones)
+    
+    nRP = round(area / ( avg_battery/avg_consumption)/2)
     print("n RPs:")
-    print(n)
-    aux_recharge_points = data["numberOfRechargePoints"]
-    for recharge_points in range(1,n+1):
-        data["numberOfRechargePoints"] = recharge_points
-        dzn_file_path = dzn_name(data, dzn_dir, json_dir)
-        json_to_dzn(data, dzn_file_path)
-    data["numberOfRechargePoints"] = aux_recharge_points
+    print(nRP)
+
+    
+    for drones in range(1,nDrones+1):
+        data["numberOfDrones"] = drones
+        for recharge_points in range(1,min(nRP+1, drones+1)):
+            data["numberOfRechargePoints"] = recharge_points
+            dzn_file_path = dzn_name(data, dzn_dir, json_dir)
+            json_to_dzn(data, dzn_file_path)
+
+    
 
     #generacion de instancias con diferentes numero de HASPs
     # avg_radius = (data["RHASP"])

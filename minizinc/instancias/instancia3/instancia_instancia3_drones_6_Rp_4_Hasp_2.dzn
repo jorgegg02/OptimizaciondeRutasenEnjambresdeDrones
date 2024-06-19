@@ -1,5 +1,5 @@
-numberOfDrones = 1; % Number of drones
-numberOfRechargePoints = 2; % Number of recharge points
+numberOfDrones = 6; % Number of drones
+numberOfRechargePoints = 4; % Number of recharge points
 numberOfUsersClusters = 40; % Number of user clusters
 numberOfHASPs = 2;
 M1 = 100000; % Large enough value
@@ -8,9 +8,9 @@ CellDist = 50;
 
 % Data
 RHASP = 10;
-Ri = [4]; % Coverage radius of drones
-Bi = [25]; % Battery capacity of drones
-Ci = [1]; % Consumption per unit distance of drones
+Ri = [4, 4, 4, 4, 4, 4]; % Coverage radius of drones
+Bi = [25, 25, 25, 25, 25, 25]; % Battery capacity of drones
+Ci = [1, 1, 1, 1, 1, 1]; % Consumption per unit distance of drones
 NUsers = [5, 7, 10, 9, 4, 3, 2, 6, 8, 11, 5, 7, 10, 9, 4, 3, 2, 6, 8, 11, 5, 7, 10, 9, 4, 3, 2, 6, 8, 11, 5, 7, 10, 9, 4, 3, 2, 6, 8, 11]; % Number of users in clusters
 UserClusterPosition = [| 2, 3
        | 5, 7

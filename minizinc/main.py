@@ -305,17 +305,20 @@ def execute_optimization(mzn_file, dzn_file, instancia):
     }
 
     # Save the data to a JSON file
-    file_name = f'results/{instancia}/result_{dzn_file}.json'
-    os.makedirs(os.path.dirname(file_name), exist_ok=True)  # Create the directory if it doesn't exist
-    with open(file_name, 'w') as f:
-        json.dump(data, f)
+    dzn_name = dzn_file.split("\\")[-1].split(".")[0]
+    file_name = f'results/{instancia}/result_{dzn_name}.json'
+    print("Saving the data to file: ", file_name)
+
+    # os.makedirs(os.path.dirname(file_name), exist_ok=True)  # Create the directory if it doesn't exist
+    # with open(file_name, 'w') as f:
+    #     json.dump(data, f)
     
     print("Data saved to file: " + file_name)
 
 
 
 print("Starting the script...")
-mzn_file = 'intento4_version_QoS_2.mzn'
+mzn_file = 'modelos\\intento4_version_QoS_2.mzn'
 
 # Get the directory path from the command line argument
 parser = argparse.ArgumentParser()
@@ -325,13 +328,21 @@ parser.add_argument('directory', type=str)
 args = parser.parse_args()
 directory = args.directory
 
-print("Directory: ", directory)
+instancia = directory.split("\\")[-2]
+# print("Directory: ", directory)
+# print("Instancia: ", instancia)
+# print("Directory: ", directory)
 # Iterate over all files in the directory
+total_files = len([filename for filename in os.listdir(directory) if filename.endswith(".dzn")])
+processed_files = 0
+
 for filename in os.listdir(directory):
     if filename.endswith(".dzn"):
         # Construct the full file path
         dzn_file = os.path.join(directory, filename)
-        
         # Execute the optimization for the current file
-        execute_optimization(mzn_file, dzn_file, directory.split("\\")[-1])
+        execute_optimization(mzn_file, dzn_file, instancia)
+        processed_files += 1
+        completion_percentage = (processed_files / total_files) * 100
+        print(f"Progress: {completion_percentage:.2f}%")
 
