@@ -32,8 +32,8 @@ def plot_metrics_grouped(metrics_list, titles, xlabel):
     plt.tight_layout()
     plt.show()
 
-def main():
-    directory = "C:\\Users\\jorge\\jgomezgi\\Universidad\\8cuatri\\tfg\\src\\minizinc\\results\\instancia3"
+def main(instancia):
+    directory = f"C:\\Users\\jorge\\jgomezgi\\Universidad\\8cuatri\\tfg\\src\\minizinc\\results\\{instancia}"
     files = [f for f in os.listdir(directory) if f.endswith('.json')]
 
     drones_results = {'latency': {'x': [], 'y': []}, 'pathloss': {'x': [], 'y': []}, 'bandwidth': {'x': [], 'y': []}, 'coverage': {'x': [], 'y': []}}
@@ -101,4 +101,4 @@ if __name__ == '__main__':
 
     print(args.json_file)
 
-    main()
+    main(args.instancia)

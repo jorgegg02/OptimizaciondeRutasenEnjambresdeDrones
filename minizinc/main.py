@@ -20,18 +20,27 @@ DroneHeight = []
 
 def execute_minizinc(mzn_file, dzn_file,timeout):
     try:
-        # Execute the MiniZinc command
+        # Delete the previous output file if it exists
+        if os.path.exists('output.txt'):
+            os.remove('output.txt')
 
+        # Execute the MiniZinc command
         print("Running MiniZinc script...")
         start_time = time.time()
-        result = subprocess.run(['minizinc', mzn_file, dzn_file, '--time-limit', str(timeout)], capture_output=True, text=True)        
+        result = subprocess.run(['minizinc', mzn_file, dzn_file, '--time-limit', str(timeout)], capture_output=True, text=True)   
+
+        print("Execution time: %s seconds" % (time.time() - start_time))
+        
         # Check if the execution was successful
         if result.returncode == 0:
             # Print the output
-            print("Execution time: %s seconds" % (time.time() - start_time))
+            # print("Execution time: %s seconds" % (time.time() - start_time))
+            
+            
             # Write the output to a file
             with open('output.txt', 'w') as f:
                 f.write(result.stdout)
+                print("Output saved to file: output.txt")
         else:
             # Print the error message
             print(result.stderr)
@@ -241,6 +250,12 @@ def calculate_manhattan_distance(x1, y1, x2, y2):
 
 def calculate_total_distance_drones_rp():
     total_distance = 0
+    # i = 0
+
+    # print(DronePosition[i][0], DronePosition[i][1])
+    # print(RechargePointPosition[closestRP[i]][0])
+    # print(RechargePointPosition[closestRP[i]][1])
+
     for i in range(numberOfDrones):    
         total_distance += calculate_manhattan_distance(DronePosition[i][0], DronePosition[i][1], RechargePointPosition[closestRP[i]-1][0], RechargePointPosition[closestRP[i]-1][1])
     return total_distance
@@ -260,7 +275,7 @@ def execute_optimization(mzn_file, dzn_file, instancia):
 
     # Parse the data
     parse_minizinc_data(dzn_file)
-    parse_output_data('output.txt')
+    parse_output_data('C:\\Users\\jorge\\jgomezgi\\Universidad\\8cuatri\\tfg\\src\\minizinc\\output.txt')
 
 
 
@@ -309,9 +324,9 @@ def execute_optimization(mzn_file, dzn_file, instancia):
     file_name = f'results/{instancia}/result_{dzn_name}.json'
     print("Saving the data to file: ", file_name)
 
-    # os.makedirs(os.path.dirname(file_name), exist_ok=True)  # Create the directory if it doesn't exist
-    # with open(file_name, 'w') as f:
-    #     json.dump(data, f)
+    os.makedirs(os.path.dirname(file_name), exist_ok=True)  # Create the directory if it doesn't exist
+    with open(file_name, 'w') as f:
+        json.dump(data, f)
     
     print("Data saved to file: " + file_name)
 
@@ -324,9 +339,11 @@ mzn_file = 'modelos\\intento4_version_QoS_2.mzn'
 parser = argparse.ArgumentParser()
 parser.add_argument('directory', type=str)
 
-    
-args = parser.parse_args()
-directory = args.directory
+try:
+    args = parser.parse_args()
+    directory = args.directory
+except:
+    directory = '.\\minizinc\\instancias\\instancia3\\'
 
 instancia = directory.split("\\")[-2]
 # print("Directory: ", directory)
@@ -341,6 +358,7 @@ for filename in os.listdir(directory):
         # Construct the full file path
         dzn_file = os.path.join(directory, filename)
         # Execute the optimization for the current file
+        print(f"Processing file: {dzn_file}")
         execute_optimization(mzn_file, dzn_file, instancia)
         processed_files += 1
         completion_percentage = (processed_files / total_files) * 100

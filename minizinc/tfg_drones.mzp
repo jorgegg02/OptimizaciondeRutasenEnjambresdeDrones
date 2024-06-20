@@ -1,30 +1,14 @@
 {
     "openFiles": [
-        "intento1.mzn",
-        "intento2.mzn",
-        "instancia1.dzn",
-        "instancia2.dzn",
-        "instancia3.dzn",
-        "intento1_version_conaltura.mzn",
-        "intento3_version_conaltura.mzn",
-        "instancia3_hasps.dzn",
-        "intento4_version_QoS.mzn",
-        "intento4_version_QoS_2.mzn",
-        "instancia3_hasps_QoS.dzn"
+        "modelos/intento4_version_QoS_2.mzn",
+        "instancias/instancia3/instancia_instancia3_drones_1_Rp_1_Hasp_2.dzn",
+        "instancias/instancia3/instancia_instancia3_drones_3_Rp_3_Hasp_2.dzn"
     ],
-    "openTab": 9,
+    "openTab": 2,
     "projectFiles": [
-        "instancia1.dzn",
-        "instancia2.dzn",
-        "instancia3.dzn",
-        "instancia3_hasps.dzn",
-        "instancia3_hasps_QoS.dzn",
-        "intento1.mzn",
-        "intento1_version_conaltura.mzn",
-        "intento2.mzn",
-        "intento3_version_conaltura.mzn",
-        "intento4_version_QoS.mzn",
-        "intento4_version_QoS_2.mzn"
+        "instancias/instancia3/instancia_instancia3_drones_1_Rp_1_Hasp_2.dzn",
+        "instancias/instancia3/instancia_instancia3_drones_3_Rp_3_Hasp_2.dzn",
+        "modelos/intento4_version_QoS_2.mzn"
     ],
     "selectedBuiltinConfigId": "org.gecode.gecode",
     "selectedBuiltinConfigVersion": "6.3.0",

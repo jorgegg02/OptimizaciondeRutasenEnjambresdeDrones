@@ -77,29 +77,14 @@ def generate_dzn_instances(json_dir):
     print(nRP)
 
     
-    for drones in range(1,nDrones+1):
+    for drones in range(2,nDrones+1):
         data["numberOfDrones"] = drones
         for recharge_points in range(1,min(nRP+1, drones+1)):
             data["numberOfRechargePoints"] = recharge_points
             dzn_file_path = dzn_name(data, dzn_dir, json_dir)
             json_to_dzn(data, dzn_file_path)
 
-    
-
-    #generacion de instancias con diferentes numero de HASPs
-    # avg_radius = (data["RHASP"])
-    # n = (area / (3.14 * avg_radius**2))
-    # print("n HASPS:")
-    # print(n)
-    # aux_hasps = data["numberOfHASPs"]
-    # for hasps in range(1,n+1):
-
-    #     data["numberOfHASPs"] = hasps
-    #     dzn_file_path = f"{dzn_dir}/instancia_{hasps}.dzn"
-    #     json_to_dzn(data, dzn_file_path)
-    # data["numberOfHASPs"] = aux_hasps
-
-    
+    print("Instancias generadas con exito")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Convert JSON to DZN format.')
