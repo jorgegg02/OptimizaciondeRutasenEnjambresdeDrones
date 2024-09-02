@@ -10,12 +10,12 @@ def json_to_dzn(data, dzn_file_path):
     f"numberOfDrones = {data['numberOfDrones']}; % Number of drones\n"
     f"numberOfRechargePoints = {data['numberOfRechargePoints']}; % Number of recharge points\n"
     f"numberOfUsersClusters = {data['numberOfUsersClusters']}; % Number of user clusters\n"
-    f"numberOfHASPs = {data.get('numberOfHASPs', '')};\n"
+    f"numberOfHAPSs = {data.get('numberOfHAPSs', '')};\n"
     f"M1 = {data['M1']}; % Large enough value\n"
     f"XY = {data['XY']};\n"
     f"CellDist = {data.get('CellDist', '')};\n\n"
     f"% Data\n"
-    f"RHASP = {data.get('RHASP', '')};\n"
+    f"RHAPS = {data.get('RHAPS', '')};\n"
     f"Ri = [{', '.join([str(data['Ri'][0]) for _ in range(data['numberOfDrones'])])}]; % Coverage radius of drones\n"
     f"Bi = [{', '.join([str(data['Bi'][0]) for _ in range(data['numberOfDrones'])])}]; % Battery capacity of drones\n"
     f"Ci = [{', '.join([str(data['Ci'][0]) for _ in range(data['numberOfDrones'])])}]; % Consumption per unit distance of drones\n"
@@ -24,6 +24,10 @@ def json_to_dzn(data, dzn_file_path):
 )
 
     # Guardar datos en archivo .dzn
+    path_ejecucion = os.path.dirname(os.path.abspath(__file__))
+    print(f"Path ejecucion: {path_ejecucion}")
+
+    dzn_file_path = path_ejecucion + "\\" + dzn_file_path
     print(f"Saving data to {dzn_file_path}")
     try:
         with open(dzn_file_path, 'x') as dzn_file:
@@ -40,15 +44,20 @@ def json_to_dzn(data, dzn_file_path):
 def dzn_name(data, dzn_file_path, instancia_path):
     ndrones = data['numberOfDrones']
     nRp = data['numberOfRechargePoints']
-    nHasp = data['numberOfHASPs']
+    nHAPS = data['numberOfHAPSs']
     instancia = instancia_path.split('\\')[-1].split('.')[0]
-    dzn_file_path = f"{dzn_file_path}\\instancia_{instancia}_drones_{ndrones}_Rp_{nRp}_Hasp_{nHasp}.dzn"
+    dzn_file_path = f"{dzn_file_path}\\instancia_{instancia}_drones_{ndrones}_Rp_{nRp}_HAPS_{nHAPS}.dzn"
     return dzn_file_path
 
 def generate_dzn_instances(json_dir):
-    dzn_dir = json_dir.replace("json", "")
+    dzn_dir = json_dir.replace("json", "").replace(".", "")
 
     #eliminamos las instancias anteriores en la carpeta
+    # print("dir: ", dzn_dir)
+    # print("json_dir: ", json_dir)
+    if not os.path.exists(dzn_dir):
+        os.makedirs(dzn_dir)
+    
     for file in os.listdir(dzn_dir):
         os.remove(f"{dzn_dir}/{file}")
         
@@ -61,7 +70,7 @@ def generate_dzn_instances(json_dir):
     print(densidad)
 
 
-    #generacion de instxancias con diferentes numero de drones y diferentes numero de puntos de recarga
+    #generacion de instancias con diferentes numero de drones y diferentes numero de puntos de recarga
     avg_radius = sum(data["Ri"]) / len(data["Ri"])
     print("avg_radius: ", avg_radius)
 
@@ -77,9 +86,9 @@ def generate_dzn_instances(json_dir):
     print(nRP)
 
     
-    for drones in range(2,nDrones+1):
+    for drones in range(2,16):
         data["numberOfDrones"] = drones
-        for recharge_points in range(1,min(nRP+1, drones+1)):
+        for recharge_points in range(1,3):
             data["numberOfRechargePoints"] = recharge_points
             dzn_file_path = dzn_name(data, dzn_dir, json_dir)
             json_to_dzn(data, dzn_file_path)
