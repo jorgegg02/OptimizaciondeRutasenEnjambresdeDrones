@@ -1,7 +1,10 @@
 import argparse
 import json
 import os
+import math
 import matplotlib.pyplot as plt
+import tools
+from collections import defaultdict
 
 def load_data(file_path):
     with open(file_path, 'r') as file:
@@ -11,94 +14,84 @@ def extract_metrics(data):
     return {
         'numberOfDrones': data['numberOfDrones'],
         'numberOfRechargePoints': data['numberOfRechargePoints'],
-        'numberOfHASPs': data['numberOfHASPs'],
-        'userLatency': sum(data['userLatency']) / len(data['userLatency']),  # Promedio de latencia
-        'userPathLoss': sum(data['userPathLoss']) / len(data['userPathLoss']),  # Promedio de path loss
-        'userBandWidth': sum(data['userBandWidth']) / len(data['userBandWidth']),  # Promedio de ancho de banda
-        'coverage': sum(data['isUserCovered']) / len(data['isUserCovered'])  # Porcentaje de usuarios cubiertos
+        'userLatency': sum( data['userLatency'][i] * data['isUserCovered'][i] * data['CellDist'] /300000 for i in range (len(data['userLatency'])) ) / sum(data['isUserCovered']),
+        'userPathLoss': sum( (4 * math.pi * data['userPathLoss'][i] * data['CellDist'] * data['isUserCovered'][i] )/0.0107  for i in range (len(data['userPathLoss'])) ) / sum(data['isUserCovered']),
+        'userBandWidth': sum( data['userBandWidth'][i] * data['isUserCovered'][i] for i in range (len(data['userBandWidth'])) ) / sum(data['isUserCovered']),
+        'coverage': sum(data['isUserCovered']) / len(data['isUserCovered']),
+        'averageDistanceToRP': calculate_average_distance_drones_rp(data['DronePosition'], data['ClosestRP'], data['RechargePointPosition'], data['numberOfDrones'])
     }
 
-def plot_metrics_grouped(metrics_list, titles, xlabel):
-    fig, axs = plt.subplots(2, 2, figsize=(14, 10))
-    axs = axs.flatten()
+def calculate_average_distance_drones_rp(DronePosition, closestRP, RechargePointPosition, numberOfDrones):
+    total_distance = 0
+    for i, drone in enumerate(DronePosition):
+        print("Calculating distance between ", drone, " and ", RechargePointPosition[closestRP[i]-1], "...", closestRP[i])
+        # print(calculate_manhattan_distance(DronePosition[i][0], DronePosition[i][1], RechargePointPosition[closestRP[i]-1][0], RechargePointPosition[closestRP[i]-1][1]))
+        total_distance += tools.distancia_manhattan(DronePosition[i], RechargePointPosition[closestRP[i]-1])
+        print(tools.distancia_manhattan(DronePosition[i], RechargePointPosition[closestRP[i]-1]))
+        # total_distance += calculate_manhattan_distance(DronePosition[i][0], DronePosition[i][1], RechargePointPosition[closestRP[i]-1][0], RechargePointPosition[closestRP[i]-1][1])
+    return total_distance / numberOfDrones
+
+def calculate_manhattan_distance(x1, y1, x2, y2):
+    return abs(x1 - x2) + abs(y1 - y2)
+
+def plot_metrics(drones_results, title, filename):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    for rp, metrics in drones_results.items():
+        ax.plot(metrics['x'], metrics['y'], label=f'RP {rp}')
     
-    for idx, metrics in enumerate(metrics_list):
-        axs[idx].plot(metrics['x'], metrics['y'], marker='o')
-        axs[idx].set_xlabel(xlabel)
-        axs[idx].set_ylabel(titles[idx])
-        axs[idx].set_title(titles[idx])
-        axs[idx].grid(True)
-    
+    ax.set_xlabel('Número de Drones')
+    ax.set_ylabel(title)
+    ax.set_title(title)
+    ax.grid(True)
+    ax.legend(title='Número de Puntos de Recarga')
     plt.tight_layout()
+    os.makedirs("results/plots", exist_ok=True)
+    plt.savefig(f"results/plots/{filename}")
+    plt.close()
     plt.show()
 
-def main(instancia):
-    directory = f"C:\\Users\\jorge\\jgomezgi\\Universidad\\8cuatri\\tfg\\src\\minizinc\\results\\{instancia}"
-    files = [f for f in os.listdir(directory) if f.endswith('.json')]
-
-    drones_results = {'latency': {'x': [], 'y': []}, 'pathloss': {'x': [], 'y': []}, 'bandwidth': {'x': [], 'y': []}, 'coverage': {'x': [], 'y': []}}
-    rp_results = {'latency': {'x': [], 'y': []}, 'pathloss': {'x': [], 'y': []}, 'bandwidth': {'x': [], 'y': []}, 'coverage': {'x': [], 'y': []}}
-    hasp_results = {'latency': {'x': [], 'y': []}, 'pathloss': {'x': [], 'y': []}, 'bandwidth': {'x': [], 'y': []}, 'coverage': {'x': [], 'y': []}}
-
-    for file_name in files:
-        data = load_data(os.path.join(directory, file_name))
-        metrics = extract_metrics(data)
-
-        drones_results['latency']['x'].append(metrics['numberOfDrones'])
-        drones_results['latency']['y'].append(metrics['userLatency'])
-        drones_results['pathloss']['x'].append(metrics['numberOfDrones'])
-        drones_results['pathloss']['y'].append(metrics['userPathLoss'])
-        drones_results['bandwidth']['x'].append(metrics['numberOfDrones'])
-        drones_results['bandwidth']['y'].append(metrics['userBandWidth'])
-        drones_results['coverage']['x'].append(metrics['numberOfDrones'])
-        drones_results['coverage']['y'].append(metrics['coverage'])
-
-        rp_results['latency']['x'].append(metrics['numberOfRechargePoints'])
-        rp_results['latency']['y'].append(metrics['userLatency'])
-        rp_results['pathloss']['x'].append(metrics['numberOfRechargePoints'])
-        rp_results['pathloss']['y'].append(metrics['userPathLoss'])
-        rp_results['bandwidth']['x'].append(metrics['numberOfRechargePoints'])
-        rp_results['bandwidth']['y'].append(metrics['userBandWidth'])
-        rp_results['coverage']['x'].append(metrics['numberOfRechargePoints'])
-        rp_results['coverage']['y'].append(metrics['coverage'])
-
-        hasp_results['latency']['x'].append(metrics['numberOfHASPs'])
-        hasp_results['latency']['y'].append(metrics['userLatency'])
-        hasp_results['pathloss']['x'].append(metrics['numberOfHASPs'])
-        hasp_results['pathloss']['y'].append(metrics['userPathLoss'])
-        hasp_results['bandwidth']['x'].append(metrics['numberOfHASPs'])
-        hasp_results['bandwidth']['y'].append(metrics['userBandWidth'])
-        hasp_results['coverage']['x'].append(metrics['numberOfHASPs'])
-        hasp_results['coverage']['y'].append(metrics['coverage'])
-
-    # Ordenar resultados por número de drones, RP y HASPs para una visualización más clara
-    for key in drones_results.keys():
-        drones_results[key]['x'], drones_results[key]['y'] = zip(*sorted(zip(drones_results[key]['x'], drones_results[key]['y'])))
-        rp_results[key]['x'], rp_results[key]['y'] = zip(*sorted(zip(rp_results[key]['x'], rp_results[key]['y'])))
-        hasp_results[key]['x'], hasp_results[key]['y'] = zip(*sorted(zip(hasp_results[key]['x'], hasp_results[key]['y'])))
-
-    # Crear listas de métricas para plotear en subplots
-    metrics_list_drones = [drones_results['latency'], drones_results['pathloss'], drones_results['bandwidth'], drones_results['coverage']]
-    titles_drones = ['Latencia', 'Pérdida de Señal', 'Ancho de Banda', 'Cobertura']
-    
-    metrics_list_rp = [rp_results['latency'], rp_results['pathloss'], rp_results['bandwidth'], rp_results['coverage']]
-    titles_rp = ['Latencia', 'Pérdida de Señal', 'Ancho de Banda', 'Cobertura']
-    
-    metrics_list_hasp = [hasp_results['latency'], hasp_results['pathloss'], hasp_results['bandwidth'], hasp_results['coverage']]
-    titles_hasp = ['Latencia', 'Pérdida de Señal', 'Ancho de Banda', 'Cobertura']
-
-    plot_metrics_grouped(metrics_list_drones, titles_drones, 'Número de Drones')
-    plot_metrics_grouped(metrics_list_rp, titles_rp, 'Número de Puntos de Recarga')
-    plot_metrics_grouped(metrics_list_hasp, titles_hasp, 'Número de HASPs')
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Análisis de resultados.')
+    parser.add_argument('instancia', type=str, help='Directorio con archivos de resultados')
+    try:
+        args = parser.parse_args()
+        instancia = args.instancia.replace(".", "")
+    except:
+        instancia = "results//instancia3"
+        # directory = f"results\\instancia3"  # Actualiza esto según tu estructura de directorio
+    # path = "C:\\Users\\jorge\\jgomezgi\\Universidad\\8cuatri\\tfg\\src\\minizinc\\results\\instancia3"
 
-    parser = argparse.ArgumentParser(description='Convert JSON to DZN format.')
-    parser.add_argument('instancia', type=str, help='Path to the input JSON file')
+    path = os.path.dirname(os.path.abspath(__file__))
+    # print(path)
+    results_dir = path + instancia
+    # print(results_dir)
 
-    
-    args = parser.parse_args()
+    results = {
+        'userLatency': defaultdict(lambda: {'x': [], 'y': []}),
+        'userPathLoss': defaultdict(lambda: {'x': [], 'y': []}),
+        'userBandWidth': defaultdict(lambda: {'x': [], 'y': []}),
+        'coverage': defaultdict(lambda: {'x': [], 'y': []}),
+        'averageDistanceToRP': defaultdict(lambda: {'x': [], 'y': []})
+    }
 
-    print(args.json_file)
+    file_names = sorted(os.listdir(results_dir))
+    for file_name in file_names:
+        file_name = results_dir + "\\" + file_name
+        print(file_name)
+        data = load_data(file_name)
+        metrics = extract_metrics(data)
 
-    main(args.instancia)
+        for key in results:
+            rp = metrics['numberOfRechargePoints']
+            results[key][rp]['x'].append(metrics['numberOfDrones'])
+            results[key][rp]['y'].append(float(metrics[key]))
+        
+        # print(metrics)
+        # input()
+    # print(results)
+    for metric, data in results.items():
+        instancia_name = instancia.replace('//', '_').replace('\\', '_')
+        file_figure_name = f"{metric}_{instancia_name}.png"
+        print(file_figure_name)
+        plot_metrics(data, metric, file_figure_name)

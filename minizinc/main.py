@@ -4,13 +4,15 @@ import numpy as np
 import json
 import os
 import argparse
+import tools
+
 
 numberOfDrones = 0
 numberOfRechargePoints = 0
 numberOfUsersClusters = 0
-numberOfHASPs = 0
+numberOfHAPSs = 0
 XY = 0
-HASPPosition = []
+HAPSPosition = []
 RechargePointPosition = []
 DronePosition = []
 NUsers = []
@@ -61,12 +63,16 @@ def parse_minizinc_data(data_string):
             elif line.startswith('numberOfUsersClusters'):
                 global numberOfUsersClusters
                 numberOfUsersClusters = int(line.split()[2].replace(";", ""))
-            elif line.startswith('numberOfHASPs'):
-                global numberOfHASPs
-                numberOfHASPs = int(line.split()[2].replace(";", ""))
+            elif line.startswith('numberOfHAPSs'):
+                global numberOfHAPSs
+                numberOfHAPSs = int(line.split()[2].replace(";", ""))
             elif line.startswith('XY'):
                 global XY
                 XY = int(line.split()[2].replace(";", ""))
+
+            elif line.startswith('CellDist'):
+                global CellDist
+                CellDist = int(line.split()[2].replace(";", ""))
 
             elif line.startswith('NUsers'):
                 global NUsers
@@ -123,16 +129,16 @@ def parse_minizinc_data(data_string):
 def parse_output_data(outputfile):
     with open(outputfile, 'r') as f:
         for line in f:
-            if line.startswith('HASPPosition'):
-                global HASPPosition
-                HASPPosition = []
-                hasps = []
-                for i in range(numberOfHASPs):
+            if line.startswith('HAPSPosition'):
+                global HAPSPosition
+                HAPSPosition = []
+                HAPSs = []
+                for i in range(numberOfHAPSs):
                     line = f.readline()
                     clean_line = line[2:]
                     coordinates = clean_line.split(", ")
-                    hasps = ([int(x) for x in coordinates])
-                    HASPPosition.append(hasps)
+                    HAPSs = ([int(x) for x in coordinates])
+                    HAPSPosition.append(HAPSs)
 
             elif line.startswith('RechargePointPosition'):
                 global RechargePointPosition
@@ -215,24 +221,24 @@ def print_matrix():
         print(f"{x:02}", end=" ")
         for y in range(1,XY+1):
             
-            if [x, y] in UserClusterPosition and [x, y] in RechargePointPosition and [x, y] in HASPPosition and [x, y] in DronePosition:
+            if [x, y] in UserClusterPosition and [x, y] in RechargePointPosition and [x, y] in HAPSPosition and [x, y] in DronePosition:
                 print(" A", end=" ")
-            elif [x, y] in UserClusterPosition and [x, y] in RechargePointPosition and [x, y] in HASPPosition:
+            elif [x, y] in UserClusterPosition and [x, y] in RechargePointPosition and [x, y] in HAPSPosition:
                 print(" B", end=" ")
             elif [x, y] in UserClusterPosition and [x, y] in RechargePointPosition:
                 print(" C", end=" ")
-            elif [x, y] in UserClusterPosition and [x, y] in HASPPosition:
-                print(" D", end=" ")
+            elif [x, y] in UserClusterPosition and [x, y] in HAPSPosition:
+                print(" J", end=" ")
             elif [x, y] in UserClusterPosition and [x, y] in DronePosition:
                 print(" E", end=" ")
             elif [x, y] in RechargePointPosition and [x, y] in DronePosition:
                 print(" F", end=" ")
-            elif [x, y] in HASPPosition and [x, y] in DronePosition:
+            elif [x, y] in HAPSPosition and [x, y] in DronePosition:
                 print(" G", end=" ")
             
             elif [x, y] in UserClusterPosition:
                 print(" U", end=" ")
-            elif [x, y] in HASPPosition:
+            elif [x, y] in HAPSPosition:
                 print(" H", end=" ")
             elif [x, y] in RechargePointPosition:
                 print(" R", end=" ")
@@ -255,9 +261,12 @@ def calculate_total_distance_drones_rp():
     # print(DronePosition[i][0], DronePosition[i][1])
     # print(RechargePointPosition[closestRP[i]][0])
     # print(RechargePointPosition[closestRP[i]][1])
-
-    for i in range(numberOfDrones):    
-        total_distance += calculate_manhattan_distance(DronePosition[i][0], DronePosition[i][1], RechargePointPosition[closestRP[i]-1][0], RechargePointPosition[closestRP[i]-1][1])
+    print("DronePosition: ", DronePosition)
+    print("number of dornes: ", numberOfDrones)
+    for i, drone in enumerate(DronePosition):
+        print("DronePosition i: ",i,  DronePosition[i])
+        print("Drone Height: ", DroneHeight[i])
+        total_distance += tools.distancia_manhattan(DronePosition[i], RechargePointPosition[closestRP[i]-1])
     return total_distance
     
 
@@ -275,7 +284,16 @@ def execute_optimization(mzn_file, dzn_file, instancia):
 
     # Parse the data
     parse_minizinc_data(dzn_file)
-    parse_output_data('C:\\Users\\jorge\\jgomezgi\\Universidad\\8cuatri\\tfg\\src\\minizinc\\output.txt')
+    output_path = 'C:\\Users\\jorge\\jgomezgi\\Universidad\\8cuatri\\tfg\\src\\minizinc\\output.txt'
+
+    output_path = 'output.txt'
+    if os.path.exists(output_path):
+        parse_output_data(output_path)
+    else:
+        print("---------------------")
+        print("Error: The output file does not exist.")
+        print("---------------------")
+        return
 
 
 
@@ -283,12 +301,12 @@ def execute_optimization(mzn_file, dzn_file, instancia):
     print("numberOfDrones: ", numberOfDrones)
     print("numberOfRechargePoints: ", numberOfRechargePoints)
     print("numberOfUsersClusters: ", numberOfUsersClusters)
-    print("numberOfHASPs: ", numberOfHASPs)
+    print("numberOfHAPSs: ", numberOfHAPSs)
     print("NUsers: ", NUsers)
     print("UserClusterPosition: ", UserClusterPosition)
 
     # Parse the output
-    print("HASPPosition: ", HASPPosition)
+    print("HAPSPosition: ", HAPSPosition)
     print("RechargePointPosition: ", RechargePointPosition)
     print("DronePosition: ", DronePosition)
     print("DroneHeight: ", DroneHeight)
@@ -303,9 +321,10 @@ def execute_optimization(mzn_file, dzn_file, instancia):
         "numberOfDrones": numberOfDrones,
         "numberOfRechargePoints": numberOfRechargePoints,
         "numberOfUsersClusters": numberOfUsersClusters,
-        "numberOfHASPs": numberOfHASPs,
+        "numberOfHAPSs": numberOfHAPSs,
         "XY": XY,
-        "HASPPosition": HASPPosition,
+        "CellDist":CellDist,
+        "HAPSPosition": HAPSPosition,
         "RechargePointPosition": RechargePointPosition,
         "DronePosition": DronePosition,
         "NUsers": NUsers,
@@ -328,7 +347,7 @@ def execute_optimization(mzn_file, dzn_file, instancia):
     with open(file_name, 'w') as f:
         json.dump(data, f)
     
-    print("Data saved to file: " + file_name)
+
 
 
 
@@ -343,11 +362,12 @@ try:
     args = parser.parse_args()
     directory = args.directory
 except:
-    directory = '.\\minizinc\\instancias\\instancia3\\'
+    print("Error: Please provide the directory path as an argument.")
 
-instancia = directory.split("\\")[-2]
-# print("Directory: ", directory)
-# print("Instancia: ", instancia)
+directory = directory.rstrip("\\")
+instancia = directory.split("\\")[-1]
+print("Directory: ", directory.split("\\"))
+print("Instancia: ", instancia)
 # print("Directory: ", directory)
 # Iterate over all files in the directory
 total_files = len([filename for filename in os.listdir(directory) if filename.endswith(".dzn")])

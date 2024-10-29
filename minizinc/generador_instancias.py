@@ -25,10 +25,11 @@ def json_to_dzn(data, dzn_file_path):
 
     # Guardar datos en archivo .dzn
     path_ejecucion = os.path.dirname(os.path.abspath(__file__))
-    print(f"Path ejecucion: {path_ejecucion}")
-
+    # print(f"Path ejecucion: {path_ejecucion}")
+    
     dzn_file_path = path_ejecucion + "\\" + dzn_file_path
     print(f"Saving data to {dzn_file_path}")
+    print(data.get('RHAPS', ''))
     try:
         with open(dzn_file_path, 'x') as dzn_file:
             dzn_file.write(dzn_data)
@@ -46,7 +47,7 @@ def dzn_name(data, dzn_file_path, instancia_path):
     nRp = data['numberOfRechargePoints']
     nHAPS = data['numberOfHAPSs']
     instancia = instancia_path.split('\\')[-1].split('.')[0]
-    dzn_file_path = f"{dzn_file_path}\\instancia_{instancia}_drones_{ndrones}_Rp_{nRp}_HAPS_{nHAPS}.dzn"
+    dzn_file_path = f"{dzn_file_path}\\{instancia}_drones_{ndrones:03}_Rp_{nRp:02}_HAPS_{nHAPS:02}.dzn"
     return dzn_file_path
 
 def generate_dzn_instances(json_dir):
@@ -85,8 +86,10 @@ def generate_dzn_instances(json_dir):
     print("n RPs:")
     print(nRP)
 
+    minDrones = input("Introduce el minimo numero de drones: ")
+    maxDrones = input("Introduce el maximo numero de drones: ")
     
-    for drones in range(2,16):
+    for drones in range(int(minDrones), int(maxDrones)+1):
         data["numberOfDrones"] = drones
         for recharge_points in range(1,3):
             data["numberOfRechargePoints"] = recharge_points

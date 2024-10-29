@@ -1,13 +1,15 @@
 {
     "openFiles": [
         "modelos/intento4_version_QoS_2.mzn",
-        "instancias/instancia3/instancia_instancia3_drones_1_Rp_1_Hasp_2.dzn",
-        "instancias/instancia3/instancia_instancia3_drones_3_Rp_3_Hasp_2.dzn"
+        "instancias/instancia3/instancia3_drones_2_Rp_1_HAPS_2.dzn",
+        "instancias/instancia2/instancia2_drones_002_Rp_01_HAPS_02.dzn",
+        "instancias/instancia1/instancia1_drones_006_Rp_02_HAPS_01.dzn"
     ],
-    "openTab": 2,
+    "openTab": 0,
     "projectFiles": [
-        "instancias/instancia3/instancia_instancia3_drones_1_Rp_1_Hasp_2.dzn",
-        "instancias/instancia3/instancia_instancia3_drones_3_Rp_3_Hasp_2.dzn",
+        "instancias/instancia1/instancia1_drones_006_Rp_02_HAPS_01.dzn",
+        "instancias/instancia2/instancia2_drones_002_Rp_01_HAPS_02.dzn",
+        "instancias/instancia3/instancia3_drones_2_Rp_1_HAPS_2.dzn",
         "modelos/intento4_version_QoS_2.mzn"
     ],
     "selectedBuiltinConfigId": "org.gecode.gecode",
