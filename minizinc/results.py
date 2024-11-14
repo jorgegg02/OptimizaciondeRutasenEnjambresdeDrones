@@ -35,7 +35,27 @@ def calculate_manhattan_distance(x1, y1, x2, y2):
     return abs(x1 - x2) + abs(y1 - y2)
 
 def plot_metrics(drones_results, title, filename):
+    # Configurar el tamaño de las fuentes
+    plt.rcParams.update({
+        'font.size': 18,          # Tamaño de la fuente general
+        'axes.titlesize': 20,     # Tamaño del título del gráfico
+        'axes.labelsize': 16,     # Tamaño de las etiquetas de los ejes
+        'xtick.labelsize': 14,    # Tamaño de las etiquetas del eje x
+        'ytick.labelsize': 14,    # Tamaño de las etiquetas del eje y
+        'legend.fontsize': 16,    # Tamaño de la fuente de la leyenda
+        'figure.titlesize': 18    # Tamaño del título de la figura
+    })
+    units = {
+        'userLatency': 'Ms',
+        'userPathLoss': 'dB',
+        'userBandWidth': 'MBps',
+        'coverage': 'Porcentaje',
+        'averageDistanceToRP': 'Cells'
+    }
+
+    title = f"{title} ({units.get(title, '')})"
     fig, ax = plt.subplots(figsize=(10, 6))
+    ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
     for rp, metrics in drones_results.items():
         ax.plot(metrics['x'], metrics['y'], label=f'RP {rp}')
     
@@ -47,6 +67,7 @@ def plot_metrics(drones_results, title, filename):
     plt.tight_layout()
     os.makedirs("results/plots", exist_ok=True)
     plt.savefig(f"results/plots/{filename}")
+    print(f"results saved in results/plots/{filename}")
     plt.close()
     plt.show()
 
